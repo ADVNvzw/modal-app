@@ -1,0 +1,94 @@
+import os
+import uuid
+from datetime import datetime, timezone
+
+import httpx
+
+from app.config import settings
+from app.shared.path_utils import normalize_path
+
+
+class FolderAnalysis:
+    """Retrieves folder contents from the local agent and returns a flat list of
+    file and directory metadata entries that match the 'files' table schema.
+
+    Entries are sorted parents-first so that parent_id can be resolved
+    sequentially in FileRepository without extra lookups.
+    """
+
+    async def analyze(self, archive_id: uuid.UUID, folder_path: str) -> list[dict]:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                f"{settings.agent_url}/files",
+                params={"path": folder_path},
+                timeout=300.0,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+
+        discovered_at = datetime.now(timezone.utc)
+        normalized_path = normalize_path(folder_path.rstrip("/"))
+        entries = [
+            {
+                "archive_id": archive_id,
+                "_parent_path": None,
+                "name": os.path.basename(normalized_path),
+                "full_path": normalized_path,
+                "relative_path": ".",
+                "is_directory": True,
+                "extension": None,
+                "size_bytes": None,
+                "sha256_hash": None,
+                "created_at": None,
+                "modified_at": None,
+                "discovered_at": discovered_at,
+            }
+        ]
+
+        for f in data["files"]:
+            is_directory = f.get("is_directory", False)
+            modified_at = (
+                datetime.fromtimestamp(f["modified"], tz=timezone.utc)
+                if f.get("modified")
+                else None
+            )
+
+            full_path     = normalize_path(f["absolute_path"])
+            parent_path   = full_path.rsplit("/", 1)[0]   # split ná normalisatie, niet ervóór
+            relative_path = normalize_path(f["relative_path"])
+
+            if is_directory:
+                entry = {
+                    "archive_id": archive_id,
+                    "_parent_path": parent_path,
+                    "name": f["name"],
+                    "full_path": full_path,
+                    "relative_path": relative_path,
+                    "is_directory": True,
+                    "extension": None,
+                    "size_bytes": None,
+                    "sha256_hash": None,
+                    "created_at": None,
+                    "modified_at": modified_at,
+                    "discovered_at": discovered_at,
+                }
+            else:
+                _, ext = os.path.splitext(f["name"])
+                entry = {
+                    "archive_id": archive_id,
+                    "_parent_path": parent_path,
+                    "name": f["name"],
+                    "full_path": full_path,
+                    "relative_path": relative_path,
+                    "is_directory": False,
+                    "extension": ext.lower() if ext else None,
+                    "size_bytes": f.get("size_bytes"),
+                    "sha256_hash": None,
+                    "created_at": None,
+                    "modified_at": modified_at,
+                    "discovered_at": discovered_at,
+                }
+
+            entries.append(entry)
+
+        return entries

@@ -1,0 +1,73 @@
+@if (contentModalFile()) {
+  <app-file-content-modal
+    [file]="contentModalFile()!"
+    (closed)="closeContentModal()"
+  />
+}
+
+@if (files().length > 0 || loading()) {
+  <hr class="section-divider" />
+
+  <div class="files-section">
+    <div class="files-section-header">
+      <span class="files-section-label">
+        BESTANDEN IN DEZE MAP ({{ filteredFiles().length }} VAN {{ files().length }})
+      </span>
+    </div>
+
+    <div class="files-toolbar">
+      <input
+        class="search-input"
+        type="text"
+        placeholder="Zoek op bestandsnaam..."
+        [value]="searchTerm()"
+        (input)="onSearch($event)"
+      />
+      <select class="type-select" [value]="typeFilter()" (change)="onTypeFilter($event)">
+        <option value="">Alle types</option>
+        @for (type of uniqueTypes(); track type) {
+          <option [value]="type">{{ type }}</option>
+        }
+      </select>
+    </div>
+
+    @if (loading()) {
+      <div class="files-loading">Bestanden laden...</div>
+    } @else if (filteredFiles().length === 0) {
+      <div class="files-empty">Geen bestanden gevonden.</div>
+    } @else {
+      <div class="files-table-wrapper">
+        <table class="files-table">
+          <thead>
+            <tr>
+              <th>Bestandsnaam</th>
+              <th>Categorie</th>
+              <th>Grootte</th>
+              <th>Taal</th>
+              <th>Auteur</th>
+              <th>Datum aangemaakt</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (file of filteredFiles(); track file.id) {
+              <tr
+                class="file-row"
+                [class.selected]="selectedFileId() === file.id"
+                (click)="selectFile(file)"
+              >
+                <td class="file-name">
+                  <button class="file-name-btn" (click)="openContentModal(file, $event)">{{ file.name }}</button>
+                </td>
+                <td class="file-type">{{ file.category ?? '—' }}</td>
+                <td class="file-size">{{ formatSize(file.size_bytes) }}</td>
+                <td class="file-language">{{ file.language ?? '—' }}</td>
+                <td class="file-author">{{ file.author ?? '—' }}</td>
+                <td class="file-date">{{ formatDate(file.content_created_at) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+}

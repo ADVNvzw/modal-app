@@ -1,0 +1,115 @@
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { ArchiveService, ArchiveStats, FolderData, FolderFile } from '../../../services/archive.service';
+import { FileTable } from './file-table/file-table';
+import { FolderDetail } from './folder-detail/folder-detail';
+import { FileDetail } from './file-detail/file-detail';
+import { AnalysisSummary } from './analysis-summary/analysis-summary';
+import { ArchiveDashboard } from '../archive-dashboard/archive-dashboard';
+import { ListView } from './list-view/list-view';
+
+interface ArchiveDetailNavigationState {
+  selectedFile?: FolderFile | null;
+  folderId?: string | null;
+  currentPath?: string;
+  folderName?: string;
+}
+
+@Component({
+  selector: 'app-archive-detail',
+  imports: [CommonModule, FileTable, FolderDetail, FileDetail, AnalysisSummary, ArchiveDashboard, ListView],
+  templateUrl: './archive-detail.html',
+  styleUrl: './archive-detail.css',
+})
+export class ArchiveDetail implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private archiveService = inject(ArchiveService);
+
+  archiveId = signal<string>('');
+  stats = signal<ArchiveStats | null>(null);
+  folderData = signal<FolderData | null>(null);
+  currentPath = signal('/');
+  loadingStats = signal(true);
+  loadingFolder = signal(true);
+  selectedFile = signal<FolderFile | null>(null);
+  rootFolderId = signal<string | null>(null);
+  dashboardVisible = signal(false);
+  viewMode = signal<'tree' | 'list'>('tree');
+
+  breadcrumbs = computed(() => {
+    const path = this.currentPath();
+    if (path === '/') return [{ label: '/', path: '/' }];
+    const parts = path.split('/').filter(Boolean);
+    return [
+      { label: '/', path: '/' },
+      ...parts.map((part, i) => ({
+        label: part,
+        path: '/' + parts.slice(0, i + 1).join('/'),
+      })),
+    ];
+  });
+
+  ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id') ?? '';
+    const navState = this.router.getCurrentNavigation()?.extras.state as ArchiveDetailNavigationState | undefined;
+
+    this.archiveId.set(id);
+    this.currentPath.set(navState?.currentPath ?? '/');
+    this.selectedFile.set(navState?.selectedFile ?? null);
+    this._loadStats(id);
+    this._loadFolder(id, navState?.currentPath ?? '/');
+  }
+
+  navigateTo(path: string): void {
+    this.currentPath.set(path);
+    this.selectedFile.set(null);
+    this._loadFolder(this.archiveId(), path);
+  }
+
+  goBack(): void {
+    this.router.navigate(['/archives']);
+  }
+
+  openExactSearch(): void {
+    this.router.navigate(['/archives', this.archiveId(), 'exact-search']);
+  }
+
+  openSemanticSearch(): void {
+    this.router.navigate(['/archives', this.archiveId(), 'search']);
+  }
+
+  openDashboard(): void {
+    this.dashboardVisible.set(true);
+  }
+
+  closeDashboard(): void {
+    this.dashboardVisible.set(false);
+  }
+
+  private _loadStats(id: string): void {
+    this.loadingStats.set(true);
+    this.archiveService.getStats(id).subscribe({
+      next: (stats) => {
+        this.stats.set(stats);
+        this.loadingStats.set(false);
+      },
+      error: () => this.loadingStats.set(false),
+    });
+  }
+
+  private _loadFolder(id: string, path: string): void {
+    this.loadingFolder.set(true);
+    this.archiveService.getFolder(id, path).subscribe({
+      next: (folder) => {
+        this.folderData.set(folder);
+        if (path === '/' && folder.folder_id && !this.rootFolderId()) {
+          this.rootFolderId.set(folder.folder_id);
+        }
+        this.loadingFolder.set(false);
+      },
+      error: () => this.loadingFolder.set(false),
+    });
+  }
+}

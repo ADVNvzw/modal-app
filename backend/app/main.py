@@ -1,0 +1,103 @@
+import logging
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import httpx
+
+from app.config import settings
+from app.shared.logging_config import setup_logging
+
+setup_logging()
+_logger = logging.getLogger("app")
+from app.get_archive_overview.router import router as archives_router
+from app.create_new_archive.router import router as create_archive_router
+from app.analysis.router import router as analysis_router
+from app.analysis.start_router import router as analysis_start_router
+from app.archive_detail.router import router as archive_detail_router
+from app.cancel_all_analyses.router import router as cancel_all_analyses_router
+from app.calculate_generic_type.router import router as generic_type_router
+from app.get_ner_for_file.router import router as get_ner_for_file_router
+from app.get_ner_for_folder.router import router as get_ner_for_folder_router
+from app.get_topics_for_file.router import router as get_topics_for_file_router
+from app.get_topics_for_folder.router import router as get_topics_for_folder_router
+from app.get_timeline_heatmap.router import router as get_timeline_heatmap_router
+from app.delete_archive.router import router as delete_archive_router
+from app.add_ollama_model.router import router as add_ollama_model_router
+from app.list_analysis_models.router import router as list_analysis_models_router
+from app.processing_settings.router import router as processing_settings_router
+from app.export_settings.router import router as export_settings_router
+from app.export_archive.router import router as export_archive_router
+from app.get_file_content.router import router as get_file_content_router
+from app.list_files_for_archive.router import router as list_files_for_archive_router
+from app.entity_topic_autocomplete.router import router as entity_topic_autocomplete_router
+from app.search_archive.router import router as search_archive_router
+from app.embedding_settings.router import router as embedding_settings_router
+from app.search_files_for_archive.router import router as search_files_for_archive_router
+from app.perform_ocr.router import router as ocr_router
+
+import asyncio
+import sys
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+app = FastAPI(title="Archive Analysis API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:4210"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(archives_router)
+app.include_router(create_archive_router)
+app.include_router(analysis_router)
+app.include_router(analysis_start_router)
+app.include_router(archive_detail_router)
+app.include_router(cancel_all_analyses_router)
+app.include_router(generic_type_router)
+app.include_router(get_ner_for_file_router)
+app.include_router(get_ner_for_folder_router)
+app.include_router(get_topics_for_file_router)
+app.include_router(delete_archive_router)
+app.include_router(get_topics_for_folder_router)
+app.include_router(get_timeline_heatmap_router)
+app.include_router(add_ollama_model_router)
+app.include_router(list_analysis_models_router)
+app.include_router(processing_settings_router)
+app.include_router(export_settings_router)
+app.include_router(export_archive_router)
+app.include_router(get_file_content_router)
+app.include_router(list_files_for_archive_router)
+app.include_router(entity_topic_autocomplete_router)
+app.include_router(search_archive_router)
+app.include_router(embedding_settings_router)
+app.include_router(search_files_for_archive_router)
+app.include_router(ocr_router)
+
+@app.get("/api/health")
+async def health():
+    return {"status": "ok"}
+
+
+@app.get("/api/health/tika")
+async def tika_health():
+    """Check if Tika server is reachable."""
+    async with httpx.AsyncClient() as client:
+        try:
+            resp = await client.get(f"{settings.tika_url}/tika")
+            return {"status": "ok", "tika_status": resp.status_code}
+        except httpx.RequestError as e:
+            return {"status": "error", "detail": str(e)}
+
+
+@app.get("/api/health/agent")
+async def agent_health():
+    """Check if the local agent is reachable."""
+    async with httpx.AsyncClient() as client:
+        try:
+            resp = await client.get(f"{settings.agent_url}/health")
+            return {"status": "ok", "agent_status": resp.status_code}
+        except httpx.RequestError:
+            return {"status": "unavailable", "detail": "Local agent is not running"}

@@ -1,0 +1,109 @@
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">M</div>
+    <span class="logo-text">MODAL</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="nav-item" routerLink="/archives" routerLinkActive="active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <ellipse cx="12" cy="5" rx="9" ry="3"/>
+        <path d="M3 5V19A9 3 0 0 0 21 19V5"/>
+        <path d="M3 12A9 3 0 0 0 21 12"/>
+      </svg>
+      Archieven
+    </a>
+
+    <a class="nav-item" routerLink="/search" routerLinkActive="active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/>
+        <path d="m21 21-4.3-4.3"/>
+      </svg>
+      Zoeken
+    </a>
+
+    <a class="nav-item" routerLink="/config" routerLinkActive="active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+      Configuratie
+    </a>
+  </nav>
+
+  <div class="sidebar-spacer"></div>
+
+  <div class="sidebar-bottom">
+    <div class="sidebar-divider"></div>
+    <button class="btn-shutdown" (click)="onShutdownClick()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" x2="9" y1="12" y2="12"/>
+      </svg>
+      Afsluiten
+    </button>
+  </div>
+
+  <div class="sidebar-version">MODAL V1.2.0</div>
+</aside>
+
+<!-- Confirmation dialog -->
+@if (shutdownState() === 'confirming') {
+  <div class="overlay" (click)="onCancelShutdown()">
+    <div class="dialog" (click)="$event.stopPropagation()">
+      <div class="dialog-title">Applicatie afsluiten</div>
+      <div class="dialog-body">
+        @if (hasActiveAnalysis()) {
+          <p class="dialog-warning">Er is momenteel een analyse actief. Deze wordt gestopt als u verdergaat.</p>
+        }
+        <p>Weet u zeker dat u de applicatie wilt stoppen?</p>
+      </div>
+      <div class="dialog-actions">
+        <button class="btn-cancel" (click)="onCancelShutdown()">Annuleren</button>
+        <button class="btn-confirm" (click)="onConfirmShutdown()">Stoppen</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Shutting down overlay -->
+@if (shutdownState() === 'shutting_down') {
+  <div class="overlay">
+    <div class="dialog">
+      <div class="dialog-title">Afsluiten...</div>
+      <div class="dialog-body">
+        <p>De applicatie wordt afgesloten. Even geduld.</p>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Done overlay -->
+@if (shutdownState() === 'done') {
+  <div class="overlay">
+    <div class="dialog">
+      <div class="dialog-icon dialog-icon--success">✓</div>
+      <div class="dialog-title">Applicatie afgesloten</div>
+      <div class="dialog-body">
+        <p>De applicatie is afgesloten. U kunt dit venster sluiten.</p>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Error overlay -->
+@if (shutdownState() === 'error') {
+  <div class="overlay">
+    <div class="dialog">
+      <div class="dialog-icon dialog-icon--error">!</div>
+      <div class="dialog-title">Fout bij afsluiten</div>
+      <div class="dialog-body">
+        <p>Er is een fout opgetreden bij het afsluiten. Sluit het venster en probeer het opnieuw.</p>
+      </div>
+      <div class="dialog-actions">
+        <button class="btn-cancel" (click)="onCancelShutdown()">Sluiten</button>
+      </div>
+    </div>
+  </div>
+}

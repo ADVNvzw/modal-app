@@ -1,0 +1,64 @@
+services:
+  frontend:
+    image: ghcr.io/aboutcodingbe/archive-app-frontend:latest
+    ports:
+      - "4210:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  backend:
+    image: ghcr.io/aboutcodingbe/archive-app-backend:latest
+    ports:
+      - "8010:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ~/.archive-app/logs:/app/logs
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://archiveuser:archivepass@db:5432/modaldb
+      - TIKA_URL=http://tika:9998
+      - AGENT_URL=http://host.docker.internal:9090
+    depends_on:
+      db:
+        condition: service_healthy
+      tika:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  tika:
+    image: apache/tika:3.3.1.0-full
+    ports:
+      - "7777:9998"
+
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      - POSTGRES_USER=archiveuser
+      - POSTGRES_PASSWORD=archivepass
+      - POSTGRES_DB=modaldb
+    ports:
+      - "5442:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "archiveuser", "-d", "modaldb"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  ollama:
+    image: ollama/ollama:0.23.0
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+
+volumes:
+  pgdata:
+  ollama_data:

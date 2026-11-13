@@ -1,0 +1,277 @@
+/* ── Panel wrapper ── */
+.side-panel {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* ── Header ── */
+.side-panel-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.side-panel-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.type-badge {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+  background: #f1f5f9;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Tabs ── */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.tab {
+  padding: 9px 16px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.tab:hover { color: #111827; }
+
+.tab.active {
+  color: #3b6ef5;
+  font-weight: 700;
+  border-bottom-color: #3b6ef5;
+}
+
+/* ── Tab content ── */
+.tab-content {
+  padding: 16px;
+}
+
+/* ── Overzicht stats ── */
+.detail-stats {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.detail-stat {
+  flex: 1;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 12px;
+  text-align: center;
+}
+
+.detail-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.detail-stat-label {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+}
+
+/* ── Category chips ── */
+.section-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.type-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.type-chip {
+  font-size: 11px;
+  padding: 3px 9px;
+  background: #f1f5f9;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  color: #374151;
+}
+
+.type-chip strong {
+  color: #111827;
+  font-weight: 700;
+}
+
+/* ── Empty state ── */
+.empty-msg {
+  font-size: 13px;
+  color: #9ca3af;
+  font-style: italic;
+  padding: 4px 0;
+}
+
+/* ── NER ── */
+.ner-loading,
+.ner-empty {
+  font-size: 13px;
+  color: #9ca3af;
+  font-style: italic;
+  padding: 4px 0;
+}
+
+.ner-section {
+  margin-bottom: 14px;
+}
+
+.ner-section-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.ner-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ner-tag {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 4px;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.ner-tag--persons {
+  background: #dbeafe;
+  border-color: #bfdbfe;
+  color: #1e40af;
+}
+
+.ner-tag--locations {
+  background: #dcfce7;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+
+.ner-tag--organisations {
+  background: #fef3c7;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.ner-tag--misc {
+  background: #f3e8ff;
+  border-color: #e9d5ff;
+  color: #6b21a8;
+}
+
+.ner-total {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.ner-total strong {
+  color: #111827;
+  font-weight: 700;
+}
+
+/* ── Topics ── */
+.topics-loading,
+.topics-empty {
+  font-size: 13px;
+  color: #9ca3af;
+  font-style: italic;
+  padding: 4px 0;
+}
+
+.topic-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.topic-tag {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.topic-total {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.topic-total strong {
+  color: #6b7280;
+  font-weight: 700;
+}
+
+.analysis-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.analysis-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.model-badge {
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: #374151;
+  background: #e5e7eb;
+  border-radius: 4px;
+  padding: 2px 7px;
+}

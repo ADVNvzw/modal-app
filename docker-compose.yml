@@ -1,0 +1,49 @@
+services:
+  tika:
+    image: apache/tika:3.3.1.0-full
+    ports:
+      - "7777:9998"
+    healthcheck:
+      #FAILED: test: ["CMD", "curl", "-f", "http://localhost:9998/tika"]
+      #spider == request w/o download; tries=1 is per interval, so still 5 retries
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9998/tika"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  db:
+    #OLD postgres w/o pgvector, below only image that's compatible: image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
+    environment:
+      - POSTGRES_USER=archiveuser
+      - POSTGRES_PASSWORD=archivepass
+      - POSTGRES_DB=modaldb
+    ports:
+      - "5442:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "archiveuser", "-d", "modaldb"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  ollama:
+    image: ollama/ollama:0.23.0
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    # Uncomment to enable NVIDIA GPU passthrough (requires RTX/CUDA GPU + Docker Desktop WSL2):
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+
+volumes:
+  pgdata:
+  ollama_data:
